@@ -1,16 +1,24 @@
 cmake_minimum_required(VERSION 3.10)
-project(gordian_linux_build)
+project(gordian_linux_build CXX)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# 加入原始碼
-add_executable(gordian_linux_build src/main.cpp src/Gordian.cpp src/EasyBMP.cpp src/EasyBMP_Geometry)
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+endif()
 
-# 加入標頭文件路徑
-include_directories(${PROJECT_SOURCE_DIR}/include)
-
-# 連結 BLAS 和 LAPACK
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 
-target_link_libraries(gordian_linux_build ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+add_executable(gordian_linux_build
+  src/main.cpp
+  src/Gordian.cpp
+  src/EasyBMP.cpp
+  src/EasyBMP_Geometry.cpp
+)
+
+# Armadillo 4.450 is vendored as headers under src/include.
+target_include_directories(gordian_linux_build SYSTEM PRIVATE ${PROJECT_SOURCE_DIR}/src/include)
+target_compile_options(gordian_linux_build PRIVATE -Wall -Wextra)
+target_link_libraries(gordian_linux_build PRIVATE ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES})
